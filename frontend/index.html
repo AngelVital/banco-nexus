@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Banco Nexus - Simulación de Transferencias Bancarias</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+  <!-- Dynamic Background Gradients -->
+  <div class="bg-blur bg-violet"></div>
+  <div class="bg-blur bg-cyan"></div>
+
+  <!-- Toast Notification Container (Movement & Audit Alerts) -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Main Container -->
+  <main id="app-container">
+    
+    <!-- ================= AUTH VIEW ================= -->
+    <section id="view-auth" class="view-section active">
+      <div class="auth-card glass-panel">
+        <div class="auth-header">
+          <div class="logo">
+            <i data-lucide="shield-check" class="logo-icon"></i>
+            <span>Banco<span>Nexus</span></span>
+          </div>
+          <p id="auth-subtitle">Simulación de Transferencias Seguras y Alta Disponibilidad</p>
+        </div>
+
+        <!-- Login Form -->
+        <form id="form-login" class="auth-form active">
+          <h2>Iniciar Sesión</h2>
+          <div class="form-group">
+            <label for="login-email"><i data-lucide="mail"></i> Correo Electrónico</label>
+            <input type="email" id="login-email" required placeholder="correo@ejemplo.com">
+          </div>
+          <div class="form-group">
+            <label for="login-password"><i data-lucide="lock"></i> Contraseña</label>
+            <input type="password" id="login-password" required placeholder="••••••••">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">
+            <span>Ingresar al Sistema</span>
+            <i data-lucide="arrow-right"></i>
+          </button>
+          <p class="auth-switch">¿No tienes cuenta? <a href="#" id="go-to-register">Regístrate aquí</a></p>
+        </form>
+
+        <!-- Register Form -->
+        <form id="form-register" class="auth-form">
+          <h2>Registro de Cliente</h2>
+          <div class="form-group">
+            <label for="register-name"><i data-lucide="user"></i> Nombre Completo</label>
+            <input type="text" id="register-name" required placeholder="Juan Pérez">
+          </div>
+          <div class="form-group">
+            <label for="register-email"><i data-lucide="mail"></i> Correo Electrónico</label>
+            <input type="email" id="register-email" required placeholder="correo@ejemplo.com">
+          </div>
+          <div class="form-group">
+            <label for="register-password"><i data-lucide="lock"></i> Contraseña (min. 6 caracteres)</label>
+            <input type="password" id="register-password" required minlength="6" placeholder="••••••••">
+          </div>
+          <button type="submit" class="btn btn-accent btn-block">
+            <span>Crear Cuenta Bancaria</span>
+            <i data-lucide="sparkles"></i>
+          </button>
+          <p class="auth-switch">¿Ya tienes cuenta? <a href="#" id="go-to-login">Inicia sesión</a></p>
+        </form>
+
+        <!-- Register Success Modal/Card (Displays generated 10-digit account number) -->
+        <div id="register-success" class="auth-success-card">
+          <div class="success-icon-wrapper">
+            <i data-lucide="badge-check" class="success-icon"></i>
+          </div>
+          <h2>¡Cuenta Creada Exitosamente!</h2>
+          <p>Tu cuenta ha sido registrada con el algoritmo de verificación y alta seguridad.</p>
+          
+          <div class="account-badge">
+            <span class="badge-label">NÚMERO DE CUENTA ÚNICO (INMUTABLE)</span>
+            <span id="new-account-number" class="badge-value">1800000000</span>
+          </div>
+
+          <button id="btn-success-continue" class="btn btn-primary btn-block">
+            <span>Ir al Tablero Principal</span>
+            <i data-lucide="layout-dashboard"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= MAIN APP VIEW ================= -->
+    <section id="view-dashboard-layout" class="view-section">
+      <div class="dashboard-wrapper">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar glass-panel">
+          <div class="sidebar-brand">
+            <i data-lucide="shield-check" class="logo-icon"></i>
+            <span>Banco<span>Nexus</span></span>
+          </div>
+
+          <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-target="panel-summary">
+              <i data-lucide="layout-dashboard"></i>
+              <span>Posición Global</span>
+            </a>
+            <a href="#" class="nav-item" data-target="panel-transfer">
+              <i data-lucide="send"></i>
+              <span>Transferir Fondos</span>
+            </a>
+            <a href="#" class="nav-item" data-target="panel-contacts">
+              <i data-lucide="users"></i>
+              <span>Contactos Destino</span>
+            </a>
+            <a href="#" class="nav-item" data-target="panel-audit">
+              <i data-lucide="file-text"></i>
+              <span>Bitácora de Auditoría</span>
+            </a>
+          </nav>
+
+          <div class="sidebar-footer">
+            <div class="user-profile-summary">
+              <div class="user-avatar">
+                <i data-lucide="user-check"></i>
+              </div>
+              <div class="user-info">
+                <span id="user-display-name">Usuario</span>
+                <span id="user-display-account" class="acc-num">1800000000</span>
+              </div>
+            </div>
+            <button id="btn-logout" class="btn-logout">
+              <i data-lucide="log-out"></i>
+              <span>Cerrar Sesión</span>
+            </button>
+          </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+          <header class="main-header glass-panel">
+            <div class="header-title">
+              <h1 id="panel-title">Posición Global</h1>
+              <p id="panel-subtitle">Resumen general de tu estado de cuenta y finanzas</p>
+            </div>
+            <div class="header-actions">
+              <div class="status-indicator">
+                <span class="dot green"></span>
+                <span>Swarm Cluster AWS (Activo)</span>
+              </div>
+            </div>
+          </header>
+
+          <!-- PANELS CONTAINER -->
+          <div class="panels-container">
+
+            <!-- PANEL: SUMMARY (GLOBAL POSITION) -->
+            <div id="panel-summary" class="dashboard-panel active">
+              <div class="summary-grid">
+                
+                <!-- Balance Card -->
+                <div class="balance-card glass-panel gradient-card">
+                  <div class="card-glow"></div>
+                  <div class="balance-header">
+                    <span>SALDO DISPONIBLE (MXN)</span>
+                    <i data-lucide="wallet" class="wallet-icon"></i>
+                  </div>
+                  <div class="balance-amount">
+                    <span class="currency">$</span>
+                    <span id="balance-value">0.00</span>
+                  </div>
+                  <div class="balance-footer">
+                    <span id="user-card-name">CLIENTE NEXUS</span>
+                    <span id="user-card-account">Cta: 1800000000</span>
+                  </div>
+                </div>
+
+                <!-- Fast Actions -->
+                <div class="quick-actions-card glass-panel">
+                  <h3>Acciones Rápidas</h3>
+                  <div class="quick-actions-grid">
+                    <button class="action-btn" id="quick-transfer">
+                      <div class="action-icon bg-indigo"><i data-lucide="send"></i></div>
+                      <span>Enviar Dinero</span>
+                    </button>
+                    <button class="action-btn" id="quick-add-contact">
+                      <div class="action-icon bg-purple"><i data-lucide="user-plus"></i></div>
+                      <span>Nuevo Contacto</span>
+                    </button>
+                    <button class="action-btn" id="quick-refresh-balance">
+                      <div class="action-icon bg-cyan"><i data-lucide="refresh-cw"></i></div>
+                      <span>Actualizar</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Transactions Table -->
+              <div class="transactions-section glass-panel">
+                <div class="section-header">
+                  <h2>Historial de Movimientos</h2>
+                  <div class="filter-wrapper">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" id="tx-search" placeholder="Buscar por concepto o cuenta...">
+                  </div>
+                </div>
+                
+                <div class="table-container">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Fecha / Hora</th>
+                        <th>Concepto</th>
+                        <th>Origen / Destino</th>
+                        <th>Tipo</th>
+                        <th>Monto</th>
+                      </tr>
+                    </thead>
+                    <tbody id="transactions-list">
+                      <!-- Dynamically populated -->
+                      <tr class="empty-state">
+                        <td colspan="5">
+                          <i data-lucide="inbox"></i>
+                          <span>No se encontraron movimientos registrados</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- PANEL: TRANSFER -->
+            <div id="panel-transfer" class="dashboard-panel">
+              <div class="transfer-grid">
+                
+                <!-- Transfer Form -->
+                <div class="transfer-form-card glass-panel">
+                  <h3>Enviar Dinero</h3>
+                  <p class="form-desc">Ingresa el número de cuenta de 10 dígitos o selecciona un contacto guardado.</p>
+                  
+                  <form id="form-execute-transfer">
+                    
+                    <div class="form-group">
+                      <label for="transfer-contact-select">Seleccionar Contacto Guardado (Opcional)</label>
+                      <select id="transfer-contact-select">
+                        <option value="">-- Ingresar cuenta manualmente --</option>
+                        <!-- Populated dynamically -->
+                      </select>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="transfer-destination-account">Número de Cuenta Destino (10 dígitos)</label>
+                      <div class="input-with-icon">
+                        <i data-lucide="credit-card"></i>
+                        <input type="text" id="transfer-destination-account" required maxlength="10" placeholder="1800000346">
+                      </div>
+                      <small class="input-help">Debe comenzar con 180 y cumplir con el dígito verificador.</small>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="transfer-amount">Monto a Transferir (MXN)</label>
+                      <div class="input-with-icon">
+                        <i data-lucide="dollar-sign"></i>
+                        <input type="number" id="transfer-amount" required step="0.01" min="0.01" placeholder="50.00">
+                      </div>
+                      <small class="input-help">Tu saldo disponible: <strong id="transfer-available-balance">$0.00</strong></small>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="transfer-concept">Concepto de Pago</label>
+                      <div class="input-with-icon">
+                        <i data-lucide="text"></i>
+                        <input type="text" id="transfer-concept" required placeholder="Pago de servicios, cena, etc.">
+                      </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">
+                      <span>Confirmar y Enviar</span>
+                      <i data-lucide="arrow-right-right"></i>
+                    </button>
+                  </form>
+                </div>
+
+                <!-- Transfer Security Tips -->
+                <div class="transfer-info-card glass-panel">
+                  <h3>Garantía de Transacciones ACID</h3>
+                  <div class="security-feature">
+                    <i data-lucide="shield-check" class="feat-icon text-indigo"></i>
+                    <div>
+                      <h4>Consistencia Financiera</h4>
+                      <p>Cada transferencia se realiza bajo una transacción aislada. Si el servidor destino o la red fallan a la mitad, los saldos se revierten automáticamente para evitar pérdida de capital.</p>
+                    </div>
+                  </div>
+                  <div class="security-feature">
+                    <i data-lucide="lock" class="feat-icon text-purple"></i>
+                    <div>
+                      <h4>Bloqueo de Registros</h4>
+                      <p>Utilizamos bloqueos transaccionales <code>FOR UPDATE</code> a nivel fila. Dos retiros concurrentes no podrán duplicar el dinero ni causar sobregiro.</p>
+                    </div>
+                  </div>
+                  <div class="security-feature">
+                    <i data-lucide="regex" class="feat-icon text-cyan"></i>
+                    <div>
+                      <h4>Validación de Expresión Regular</h4>
+                      <p>Toda transacción valida estrictamente el formato <code>/^\d{10}$/</code> y el dígito verificador mod 10 antes de tocar la base de datos.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PANEL: CONTACTS -->
+            <div id="panel-contacts" class="dashboard-panel">
+              <div class="contacts-grid">
+                
+                <!-- Add Contact Form -->
+                <div class="add-contact-card glass-panel">
+                  <h3>Registrar Cuenta de Tercero</h3>
+                  <p class="form-desc">Guarda cuentas de otros usuarios en tu agenda para realizar transferencias rápidas.</p>
+                  
+                  <form id="form-add-contact">
+                    <div class="form-group">
+                      <label for="contact-account">Número de Cuenta Destino (10 dígitos)</label>
+                      <div class="input-with-icon">
+                        <i data-lucide="credit-card"></i>
+                        <input type="text" id="contact-account" required maxlength="10" placeholder="1800000021">
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="contact-alias">Alias del Contacto</label>
+                      <div class="input-with-icon">
+                        <i data-lucide="tag"></i>
+                        <input type="text" id="contact-alias" required placeholder="Mamá, Socio, Juan, etc.">
+                      </div>
+                    </div>
+                    <button type="submit" class="btn btn-accent btn-block">
+                      <i data-lucide="user-plus"></i>
+                      <span>Agregar a Contactos</span>
+                    </button>
+                  </form>
+                </div>
+
+                <!-- Contacts List -->
+                <div class="contacts-list-card glass-panel">
+                  <h3>Mi Agenda de Contactos</h3>
+                  <div class="contacts-list-container" id="contacts-list">
+                    <!-- Populated dynamically -->
+                    <div class="empty-state">
+                      <i data-lucide="users"></i>
+                      <span>No tienes contactos guardados</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PANEL: AUDIT -->
+            <div id="panel-audit" class="dashboard-panel">
+              <div class="audit-card glass-panel">
+                <div class="section-header">
+                  <div>
+                    <h2>Bitácora de Auditoría Interna</h2>
+                    <p class="section-desc">Registro inmutable de accesos, operaciones críticas y seguridad del sistema.</p>
+                  </div>
+                  <button class="btn btn-secondary" id="btn-refresh-audit">
+                    <i data-lucide="refresh-cw"></i>
+                    <span>Refrescar logs</span>
+                  </button>
+                </div>
+
+                <div class="table-container">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Fecha / Hora</th>
+                        <th>Acción Realizada</th>
+                        <th>Estado</th>
+                        <th>Detalles del Registro</th>
+                      </tr>
+                    </thead>
+                    <tbody id="audit-list">
+                      <!-- Dynamically populated -->
+                      <tr class="empty-state">
+                        <td colspan="4">
+                          <i data-lucide="activity"></i>
+                          <span>No hay eventos registrados en la bitácora</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- JS Logic -->
+  <script src="app.js"></script>
+</body>
+</html>

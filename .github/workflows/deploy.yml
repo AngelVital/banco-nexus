@@ -1,0 +1,87 @@
+name: CI/CD Pipeline - Banco Nexus Deployment
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-push:
+    name: Build & Push Docker Images
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
+
+      # Build and push Backend Image
+      - name: Build & Push Backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.REGISTRY_USERNAME }}/banconexus-backend:latest
+            ${{ secrets.REGISTRY_USERNAME }}/banconexus-backend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Build and push Frontend Image
+      - name: Build & Push Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.REGISTRY_USERNAME }}/banconexus-frontend:latest
+            ${{ secrets.REGISTRY_USERNAME }}/banconexus-frontend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-swarm:
+    name: Deploy to AWS Docker Swarm
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure SSH Private Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AWS_EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.AWS_MANAGER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Execute Swarm Deploy Command via SSH
+        run: |
+          # 1. Copiar el archivo docker-compose.yml al servidor manager de AWS
+          scp docker-compose.yml ${{ secrets.AWS_SSH_USER }}@${{ secrets.AWS_MANAGER_HOST }}:~/docker-compose.yml
+          
+          # 2. Conectarse por SSH y desplegar el stack utilizando rolling update nativo de Swarm
+          ssh ${{ secrets.AWS_SSH_USER }}@${{ secrets.AWS_MANAGER_HOST }} "
+            # Iniciar sesión en el registro para poder descargar las imágenes construidas
+            docker login -u '${{ secrets.REGISTRY_USERNAME }}' -p '${{ secrets.REGISTRY_TOKEN }}'
+            
+            # Descargar últimas imágenes
+            docker pull ${{ secrets.REGISTRY_USERNAME }}/banconexus-backend:latest
+            docker pull ${{ secrets.REGISTRY_USERNAME }}/banconexus-frontend:latest
+            
+            # Desplegar o actualizar el stack con la nueva configuración
+            # Docker Swarm ejecutará el despliegue progresivo (rolling update) sin caída de servicio
+            docker stack deploy -c ~/docker-compose.yml --with-registry-auth banconexus-stack
+          "
